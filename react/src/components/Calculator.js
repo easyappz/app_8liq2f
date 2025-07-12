@@ -1,166 +1,168 @@
 import React, { useState } from 'react';
 import { Box, Grid, Button, Typography } from '@mui/material';
 
-// Constants for button types and operations
-const BUTTONS = [
-  { label: 'AC', type: 'function', color: 'lightgrey', textColor: 'black' },
-  { label: '+/-', type: 'function', color: 'lightgrey', textColor: 'black' },
-  { label: '%', type: 'function', color: 'lightgrey', textColor: 'black' },
-  { label: '÷', type: 'operation', color: 'orange', textColor: 'white' },
-  { label: '7', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '8', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '9', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '×', type: 'operation', color: 'orange', textColor: 'white' },
-  { label: '4', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '5', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '6', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '-', type: 'operation', color: 'orange', textColor: 'white' },
-  { label: '1', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '2', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '3', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '+', type: 'operation', color: 'orange', textColor: 'white' },
-  { label: '0', type: 'number', color: 'darkgrey', textColor: 'white', span: 2 },
-  { label: '.', type: 'number', color: 'darkgrey', textColor: 'white' },
-  { label: '=', type: 'operation', color: 'orange', textColor: 'white' },
-];
-
 const Calculator = () => {
   const [display, setDisplay] = useState('0');
   const [previousValue, setPreviousValue] = useState(null);
   const [operation, setOperation] = useState(null);
-  const [waitingForSecondInput, setWaitingForSecondInput] = useState(false);
+  const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
 
   const handleNumberClick = (value) => {
     if (display === '0' && value !== '.') {
       setDisplay(value);
-    } else if (waitingForSecondInput) {
+    } else if (waitingForSecondValue) {
       setDisplay(value);
-      setWaitingForSecondInput(false);
+      setWaitingForSecondValue(false);
     } else {
       // Prevent multiple decimal points
-      if (value === '.' && display.includes('.')) return;
+      if (value === '.' && display.includes('.')) {
+        return;
+      }
       setDisplay(display + value);
     }
   };
 
   const handleOperationClick = (op) => {
-    if (op === '=') {
-      if (previousValue !== null && operation) {
-        const result = calculateResult(previousValue, parseFloat(display), operation);
-        setDisplay(result.toString());
-        setPreviousValue(null);
-        setOperation(null);
+    setPreviousValue(parseFloat(display));
+    setOperation(op);
+    setWaitingForSecondValue(true);
+  };
+
+  const calculateResult = () => {
+    if (!previousValue || !operation) return;
+
+    const currentValue = parseFloat(display);
+    let result = 0;
+
+    if (operation === '+') {
+      result = previousValue + currentValue;
+    } else if (operation === '-') {
+      result = previousValue - currentValue;
+    } else if (operation === '×') {
+      result = previousValue * currentValue;
+    } else if (operation === '÷') {
+      if (currentValue === 0) {
+        setDisplay('Error');
+        return;
       }
+      result = previousValue / currentValue;
+    }
+
+    setDisplay(result.toString());
+    setPreviousValue(null);
+    setOperation(null);
+    setWaitingForSecondValue(false);
+  };
+
+  const handleClear = () => {
+    setDisplay('0');
+    setPreviousValue(null);
+    setOperation(null);
+    setWaitingForSecondValue(false);
+  };
+
+  const handleToggleSign = () => {
+    if (display === '0') return;
+    if (display.startsWith('-')) {
+      setDisplay(display.slice(1));
     } else {
-      setPreviousValue(parseFloat(display));
-      setOperation(op);
-      setWaitingForSecondInput(true);
+      setDisplay('-' + display);
     }
   };
 
-  const calculateResult = (first, second, op) => {
-    switch (op) {
-      case '+':
-        return first + second;
-      case '-':
-        return first - second;
-      case '×':
-        return first * second;
-      case '÷':
-        return second !== 0 ? first / second : 'Error';
-      default:
-        return second;
-    }
+  const handlePercent = () => {
+    const value = parseFloat(display);
+    setDisplay((value / 100).toString());
   };
 
-  const handleFunctionClick = (func) => {
-    if (func === 'AC') {
-      setDisplay('0');
-      setPreviousValue(null);
-      setOperation(null);
-      setWaitingForSecondInput(false);
-    } else if (func === '+/-') {
-      if (display !== '0') {
-        setDisplay((parseFloat(display) * -1).toString());
-      }
-    } else if (func === '%') {
-      setDisplay((parseFloat(display) / 100).toString());
+  const buttonLayout = [
+    ['AC', '±', '%', '÷'],
+    ['7', '8', '9', '×'],
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['0', '.', '=']
+  ];
+
+  const getButtonStyle = (value) => {
+    if (['AC', '±', '%'].includes(value)) {
+      return { backgroundColor: '#A5A5A5', color: 'black' };
+    } else if (['÷', '×', '-', '+'].includes(value)) {
+      return { backgroundColor: '#FF9500', color: 'white' };
+    } else if (value === '=') {
+      return { backgroundColor: '#FF9500', color: 'white' };
     }
+    return { backgroundColor: '#333333', color: 'white' };
   };
 
-  const handleButtonClick = (button) => {
-    if (button.type === 'number') {
-      handleNumberClick(button.label);
-    } else if (button.type === 'operation') {
-      handleOperationClick(button.label);
-    } else if (button.type === 'function') {
-      handleFunctionClick(button.label);
+  const handleButtonClick = (value) => {
+    if (value === 'AC') {
+      handleClear();
+    } else if (value === '±') {
+      handleToggleSign();
+    } else if (value === '%') {
+      handlePercent();
+    } else if (['+', '-', '×', '÷'].includes(value)) {
+      handleOperationClick(value);
+    } else if (value === '=') {
+      calculateResult();
+    } else {
+      handleNumberClick(value);
     }
   };
 
   return (
     <Box
       sx={{
-        width: '100%',
-        maxWidth: '400px',
+        width: '320px',
         margin: 'auto',
         backgroundColor: 'black',
-        borderRadius: '20px',
+        borderRadius: '10px',
         padding: '20px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-        userSelect: 'none',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
       }}
     >
       <Typography
         variant="h3"
+        align="right"
         sx={{
           color: 'white',
-          textAlign: 'right',
+          backgroundColor: 'black',
           padding: '20px',
-          fontWeight: '300',
+          borderRadius: '5px',
+          marginBottom: '20px',
+          fontWeight: 'lighter',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          textOverflow: 'ellipsis'
         }}
       >
         {display}
       </Typography>
-      <Grid container spacing={1} sx={{ padding: '10px' }}>
-        {BUTTONS.map((btn) => (
-          <Grid
-            item
-            xs={btn.span ? 6 : 3}
-            key={btn.label}
-            sx={{ minHeight: '80px' }}
-          >
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                height: '100%',
-                borderRadius: btn.label === '0' ? '40px' : '50%',
-                backgroundColor:
-                  btn.color === 'lightgrey'
-                    ? '#A5A5A5'
-                    : btn.color === 'darkgrey'
-                    ? '#333333'
-                    : '#FF9500',
-                color: btn.textColor,
-                fontSize: '1.5rem',
-                '&:hover': {
-                  backgroundColor:
-                    btn.color === 'lightgrey'
-                      ? '#8C8C8C'
-                      : btn.color === 'darkgrey'
-                      ? '#4C4C4C'
-                      : '#CC7700',
-                },
-              }}
-              onClick={() => handleButtonClick(btn)}
+      <Grid container spacing={1}>
+        {buttonLayout.map((row, rowIndex) =>
+          row.map((btn, btnIndex) => (
+            <Grid
+              item
+              xs={btn === '0' ? 6 : 3}
+              key={`${rowIndex}-${btnIndex}`}
             >
-              {btn.label}
-            </Button>
-          </Grid>
-        ))}
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  height: '60px',
+                  borderRadius: btn === '0' ? '5px' : '50%',
+                  fontSize: '1.2rem',
+                  fontWeight: 'lighter',
+                  textTransform: 'none',
+                  ...getButtonStyle(btn)
+                }}
+                onClick={() => handleButtonClick(btn)}
+              >
+                {btn}
+              </Button>
+            </Grid>
+          ))
+        )}
       </Grid>
     </Box>
   );
