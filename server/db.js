@@ -1,16 +1,18 @@
-const MONGO_URI = process.env.MONGO_URI;
+const mongoose = require('mongoose');
 
-const mongoDb = mongoose.createConnection(MONGO_URI);
+// MongoDB URI directly in code as per instructions
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/calculator_history';
 
-mongoDb
-  .asPromise()
-  .then(() => {
-    console.log('MongoDB connected');
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-  });
+// Create MongoDB connection
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('MongoDB connected successfully');
+})
+.catch((err) => {
+  console.error('MongoDB connection error:', err);
+});
 
-module.exports = {
-  mongoDb,
-};
+module.exports = mongoose;
