@@ -1,11 +1,36 @@
-import React, { useState } from 'react';
-import { Box, Grid, Button, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, Button, Typography, Divider, List, ListItem, ListItemText } from '@mui/material';
+import axios from 'axios';
 
 const Calculator = () => {
   const [display, setDisplay] = useState('0');
   const [previousValue, setPreviousValue] = useState(null);
   const [operation, setOperation] = useState(null);
   const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      const response = await axios.get('/api/history');
+      setHistory(response.data);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
+  };
+
+  const saveCalculation = async (expression, result) => {
+    try {
+      await axios.post('/api/history', { expression, result });
+      fetchHistory();
+    } catch (error) {
+      console.error('Error saving calculation:', error);
+    }
+  };
 
   const handleNumberClick = (value) => {
     if (display === '0' && value !== '.') {
@@ -14,7 +39,6 @@ const Calculator = () => {
       setDisplay(value);
       setWaitingForSecondValue(false);
     } else {
-      // Prevent multiple decimal points
       if (value === '.' && display.includes('.')) {
         return;
       }
@@ -48,10 +72,12 @@ const Calculator = () => {
       result = previousValue / currentValue;
     }
 
+    const expression = `${previousValue} ${operation} ${currentValue}`;
     setDisplay(result.toString());
     setPreviousValue(null);
     setOperation(null);
     setWaitingForSecondValue(false);
+    saveCalculation(expression, result);
   };
 
   const handleClear = () => {
@@ -73,6 +99,10 @@ const Calculator = () => {
   const handlePercent = () => {
     const value = parseFloat(display);
     setDisplay((value / 100).toString());
+  };
+
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
   };
 
   const buttonLayout = [
@@ -164,6 +194,53 @@ const Calculator = () => {
           ))
         )}
       </Grid>
+      <Box sx={{ marginTop: '20px' }}>
+        <Button
+          variant="text"
+          onClick={toggleHistory}
+          sx={{
+            color: '#A5A5A5',
+            textTransform: 'none',
+            fontSize: '1rem'
+          }}
+        >
+          {showHistory ? 'Hide History' : 'Show History'}
+        </Button>
+        {showHistory && (
+          <Box
+            sx={{
+              backgroundColor: '#1C1C1E',
+              borderRadius: '10px',
+              padding: '10px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              marginTop: '10px',
+              color: 'white'
+            }}
+          >
+            <Typography variant="h6" sx={{ marginBottom: '10px' }}>
+              History
+            </Typography>
+            <Divider sx={{ backgroundColor: '#2C2C2E', marginBottom: '10px' }} />
+            {history.length > 0 ? (
+              <List>
+                {history.map((calc, index) => (
+                  <ListItem key={index} sx={{ padding: '5px 0' }}>
+                    <ListItemText
+                      primary={`${calc.expression} = ${calc.result}`}
+                      sx={{ color: 'white' }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography variant="body2" sx={{ color: '#A5A5A5' }}>
+                No calculations yet
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };
