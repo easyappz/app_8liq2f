@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Button, Typography, Divider, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Grid, Button, Typography } from '@mui/material';
 import axios from 'axios';
+import HistoryPanel from './HistoryPanel';
 
 const Calculator = () => {
   const [display, setDisplay] = useState('0');
@@ -8,7 +9,6 @@ const Calculator = () => {
   const [operation, setOperation] = useState(null);
   const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
   const [history, setHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     fetchHistory();
@@ -17,7 +17,9 @@ const Calculator = () => {
   const fetchHistory = async () => {
     try {
       const response = await axios.get('/api/history');
-      setHistory(response.data);
+      if (response.data.success) {
+        setHistory(response.data.data);
+      }
     } catch (error) {
       console.error('Error fetching history:', error);
     }
@@ -25,8 +27,10 @@ const Calculator = () => {
 
   const saveCalculation = async (expression, result) => {
     try {
-      await axios.post('/api/history', { expression, result });
-      fetchHistory();
+      const response = await axios.post('/api/history', { expression, result });
+      if (response.data.success) {
+        setHistory([response.data.data, ...history]);
+      }
     } catch (error) {
       console.error('Error saving calculation:', error);
     }
@@ -39,6 +43,7 @@ const Calculator = () => {
       setDisplay(value);
       setWaitingForSecondValue(false);
     } else {
+      // Prevent multiple decimal points
       if (value === '.' && display.includes('.')) {
         return;
       }
@@ -72,12 +77,12 @@ const Calculator = () => {
       result = previousValue / currentValue;
     }
 
-    const expression = `${previousValue} ${operation} ${currentValue}`;
+    const expression = `${previousValue} ${operation} ${currentValue} =`;
     setDisplay(result.toString());
+    saveCalculation(expression, result);
     setPreviousValue(null);
     setOperation(null);
     setWaitingForSecondValue(false);
-    saveCalculation(expression, result);
   };
 
   const handleClear = () => {
@@ -99,10 +104,6 @@ const Calculator = () => {
   const handlePercent = () => {
     const value = parseFloat(display);
     setDisplay((value / 100).toString());
-  };
-
-  const toggleHistory = () => {
-    setShowHistory(!showHistory);
   };
 
   const buttonLayout = [
@@ -143,6 +144,9 @@ const Calculator = () => {
   return (
     <Box
       sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         width: '320px',
         margin: 'auto',
         backgroundColor: 'black',
@@ -162,7 +166,8 @@ const Calculator = () => {
           marginBottom: '20px',
           fontWeight: 'lighter',
           overflow: 'hidden',
-          textOverflow: 'ellipsis'
+          textOverflow: 'ellipsis',
+          width: '100%'
         }}
       >
         {display}
@@ -194,53 +199,7 @@ const Calculator = () => {
           ))
         )}
       </Grid>
-      <Box sx={{ marginTop: '20px' }}>
-        <Button
-          variant="text"
-          onClick={toggleHistory}
-          sx={{
-            color: '#A5A5A5',
-            textTransform: 'none',
-            fontSize: '1rem'
-          }}
-        >
-          {showHistory ? 'Hide History' : 'Show History'}
-        </Button>
-        {showHistory && (
-          <Box
-            sx={{
-              backgroundColor: '#1C1C1E',
-              borderRadius: '10px',
-              padding: '10px',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              marginTop: '10px',
-              color: 'white'
-            }}
-          >
-            <Typography variant="h6" sx={{ marginBottom: '10px' }}>
-              History
-            </Typography>
-            <Divider sx={{ backgroundColor: '#2C2C2E', marginBottom: '10px' }} />
-            {history.length > 0 ? (
-              <List>
-                {history.map((calc, index) => (
-                  <ListItem key={index} sx={{ padding: '5px 0' }}>
-                    <ListItemText
-                      primary={`${calc.expression} = ${calc.result}`}
-                      sx={{ color: 'white' }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography variant="body2" sx={{ color: '#A5A5A5' }}>
-                No calculations yet
-              </Typography>
-            )}
-          </Box>
-        )}
-      </Box>
+      <HistoryPanel history={history} />
     </Box>
   );
 };
