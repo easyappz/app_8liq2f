@@ -8,7 +8,7 @@ const Calculator = () => {
   const [operation, setOperation] = useState(null);
   const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
 
-  const handleDigitClick = (value) => {
+  const handleNumberClick = (value) => {
     if (display === '0' && value !== '.') {
       setDisplay(value);
     } else {
@@ -32,21 +32,21 @@ const Calculator = () => {
   const calculateResult = () => {
     if (!previousValue || !operation) return;
 
-    const current = parseFloat(display);
+    const currentValue = parseFloat(display);
     let result = 0;
 
     if (operation === '+') {
-      result = previousValue + current;
+      result = previousValue + currentValue;
     } else if (operation === '-') {
-      result = previousValue - current;
+      result = previousValue - currentValue;
     } else if (operation === '×') {
-      result = previousValue * current;
+      result = previousValue * currentValue;
     } else if (operation === '÷') {
-      if (current === 0) {
+      if (currentValue === 0) {
         setDisplay('Error');
         return;
       }
-      result = previousValue / current;
+      result = previousValue / currentValue;
     }
 
     setDisplay(result.toString());
@@ -74,191 +74,199 @@ const Calculator = () => {
 
   const handlePercent = () => {
     const value = parseFloat(display);
-    setDisplay((value / 100).toString());
+    if (value !== 0) {
+      setDisplay((value / 100).toString());
+    }
   };
 
   return (
     <Box className="calculator-container">
       <Box className="calculator-display">
-        <Typography variant="h2" className="display-text">
+        <Typography variant="h3" className="display-text">
           {display}
         </Typography>
       </Box>
-      <Grid container spacing={1} className="calculator-buttons">
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button secondary"
-            onClick={handleClear}
-          >
-            AC
-          </Button>
+      <Grid container className="calculator-buttons">
+        <Grid container item spacing={1} className="calculator-row">
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button secondary-button"
+              onClick={handleClear}
+            >
+              AC
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button secondary-button"
+              onClick={handleToggleSign}
+            >
+              ±
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button secondary-button"
+              onClick={handlePercent}
+            >
+              %
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button operation-button"
+              onClick={() => handleOperationClick('÷')}
+            >
+              ÷
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button secondary"
-            onClick={handleToggleSign}
-          >
-            ±
-          </Button>
+        <Grid container item spacing={1} className="calculator-row">
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('7')}
+            >
+              7
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('8')}
+            >
+              8
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('9')}
+            >
+              9
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button operation-button"
+              onClick={() => handleOperationClick('×')}
+            >
+              ×
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button secondary"
-            onClick={handlePercent}
-          >
-            %
-          </Button>
+        <Grid container item spacing={1} className="calculator-row">
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('4')}
+            >
+              4
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('5')}
+            >
+              5
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('6')}
+            >
+              6
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button operation-button"
+              onClick={() => handleOperationClick('-')}
+            >
+              −
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button operation"
-            onClick={() => handleOperationClick('÷')}
-          >
-            ÷
-          </Button>
+        <Grid container item spacing={1} className="calculator-row">
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('1')}
+            >
+              1
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('2')}
+            >
+              2
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('3')}
+            >
+              3
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button operation-button"
+              onClick={() => handleOperationClick('+')}
+            >
+              +
+            </Button>
+          </Grid>
         </Grid>
-
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('7')}
-          >
-            7
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('8')}
-          >
-            8
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('9')}
-          >
-            9
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button operation"
-            onClick={() => handleOperationClick('×')}
-          >
-            ×
-          </Button>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('4')}
-          >
-            4
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('5')}
-          >
-            5
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('6')}
-          >
-            6
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button operation"
-            onClick={() => handleOperationClick('-')}
-          >
-            −
-          </Button>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('1')}
-          >
-            1
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('2')}
-          >
-            2
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('3')}
-          >
-            3
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button operation"
-            onClick={() => handleOperationClick('+')}
-          >
-            +
-          </Button>
-        </Grid>
-
-        <Grid item xs={6}>
-          <Button
-            fullWidth
-            className="button primary zero"
-            onClick={() => handleDigitClick('0')}
-          >
-            0
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button primary"
-            onClick={() => handleDigitClick('.')}
-          >
-            .
-          </Button>
-        </Grid>
-        <Grid item xs={3}>
-          <Button
-            fullWidth
-            className="button equals"
-            onClick={calculateResult}
-          >
-            =
-          </Button>
+        <Grid container item spacing={1} className="calculator-row">
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              className="button number-button zero-button"
+              onClick={() => handleNumberClick('0')}
+            >
+              0
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button number-button"
+              onClick={() => handleNumberClick('.')}
+            >
+              .
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              variant="contained"
+              className="button equals-button"
+              onClick={calculateResult}
+            >
+              =
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
     </Box>

@@ -6,7 +6,9 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="App">
-        <Calculator />
+        <header className="App-header">
+          <Calculator />
+        </header>
       </div>
     </ErrorBoundary>
   );
