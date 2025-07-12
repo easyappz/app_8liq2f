@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const apiRoutes = require('./apiRoutes');
-require('./db');
+const { connectToMongoDB } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,18 +10,23 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// API routes
+// API Routes
 app.use('/api', apiRoutes);
 
-// Error handling middleware
+// Basic error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ success: false, message: 'Something went wrong!' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Start server after connecting to MongoDB
+const startServer = async () => {
+  await connectToMongoDB();
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
 
-module.exports = app;
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+});

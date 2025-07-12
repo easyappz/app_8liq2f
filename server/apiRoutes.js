@@ -20,10 +20,10 @@ router.get('/status', (req, res) => {
 router.get('/history', async (req, res) => {
   try {
     const history = await Calculation.find().sort({ createdAt: -1 });
-    res.status(200).json(history);
+    res.json({ success: true, data: history });
   } catch (error) {
     console.error('Error fetching calculation history:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -33,7 +33,7 @@ router.post('/history', async (req, res) => {
     const { expression, result } = req.body;
     
     if (!expression || result === undefined) {
-      return res.status(400).json({ error: 'Expression and result are required' });
+      return res.status(400).json({ success: false, message: 'Expression and result are required' });
     }
 
     const newCalculation = new Calculation({
@@ -41,11 +41,11 @@ router.post('/history', async (req, res) => {
       result
     });
 
-    const savedCalculation = await newCalculation.save();
-    res.status(201).json(savedCalculation);
+    await newCalculation.save();
+    res.status(201).json({ success: true, data: newCalculation });
   } catch (error) {
     console.error('Error saving calculation:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 

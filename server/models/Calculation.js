@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const calculationSchema = new mongoose.Schema({
   expression: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   result: {
     type: Number,
